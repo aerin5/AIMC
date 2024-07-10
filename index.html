@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <title>의딥人</title>
+
+    <link rel='stylesheet' type='text/css' href='/src/css/example-smart-app.css'>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id='errors'></div>
+    <div id="loading" class="spinner"></div>
+    
+    <!-- 상단 바 -->
+    <div class="header">
+        <h2>환자 관리</h2>
+    </div>
+
+    <!-- 검색창 -->
+    <div id="searchPage" class="search-page">
+        <div class="search-box">
+            <input type="text" id="patientId" class="form-control" placeholder="환자 ID">
+            <button id="searchButton" class="btn btn-primary">검색</button>
+            <button id="resetButton" class="btn btn-secondary">초기화</button>
+        </div>
+        <div id="resultBox" class="result-box">
+            <p>검색 결과:</p>
+            <ul id="patientDetails" class="list-group">
+                <!-- 검색 결과가 여기 표시됩니다 -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- FHIR Client JS Library -->
+    <script src='./lib/js/fhir-client-v0.1.12.js'></script>
+
+    <!-- Prevent session bleed caused by single threaded embedded browser and sessionStorage API -->
+    <script src='./lib/js/fhir-client-cerner-additions-1.0.0.js'></script>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Application-level javascript-->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const searchButton = document.getElementById("searchButton");
+        const resetButton = document.getElementById("resetButton");
+        const patientDetails = document.getElementById("patientDetails");
+
+        searchButton.addEventListener("click", () => {
+          const patientId = document.getElementById("patientId").value;
+          fetch('patients.json')
+            .then(response => response.json())
+            .then(data => {
+              const patient = data.find(p => p.id == patientId);
+              patientDetails.innerHTML = "";
+              if (patient) {
+                const details = `
+                  <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                      환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
+                    </div>
+                    <div id="basicInfo" class="collapse">
+                      <p>이름: ${patient.name}</p>
+                      <p>성별: ${patient.gender}</p>
+                      <p>나이: ${patient.age}</p>
+                      <p>키: ${patient.labResults.height}</p>
+                      <p>몸무게: ${patient.labResults.weight}</p>
+                    </div>
+                  </li>
+                  <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                      랩 결과 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#labResults">상세</button>
+                    </div>
+                    <div id="labResults" class="collapse">
+                      <p>혈압: ${patient.labResults.bloodPressure}</p>
+                      <p>LDL 콜레스테롤: ${patient.labResults.cholesterol.LDL}</p>
+                      <p>HDL 콜레스테롤: ${patient.labResults.cholesterol.HDL}</p>
+                    </div>
+                  </li>
+                  <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                      간호 초기 평가 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#initialNurseAssessment">상세</button>
+                    </div>
+                    <div id="initialNurseAssessment" class="collapse">
+                      <p>${patient.initialNurseAssessment}</p>
+                    </div>
+                  </li>
+                  <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                      예상 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#expectedSymptoms">상세</button>
+                    </div>
+                    <div id="expectedSymptoms" class="collapse">
+                      <p>${patient.expectedSymptoms}</p>
+                    </div>
+                  </li>
+                `;
+                patientDetails.innerHTML = details;
+              } else {
+                patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+              }
+            });
+        });
+
+        resetButton.addEventListener("click", () => {
+          document.getElementById("patientId").value = "";
+          patientDetails.innerHTML = "";
+        });
+      });
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <title>의딥人</title>
+
+    <link rel='stylesheet' type='text/css' href='/src/css/example-smart-app.css'>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id='errors'></div>
+    <div id="loading" class="spinner"></div>
+    
+    <!-- 검색창 -->
+    <div id="searchPage" class="search-page">
+      <label for="patientId">Patient ID</label>
+      <input type="text" id="patientId" name="name" placeholder="환자 ID를 입력해주세요">
+      <button id="resetButton" class="btn btn-secondary">초기화</button>
+    </div>
+
+    <!-- FHIR Client JS Library -->
+    <script src='./lib/js/fhir-client-v0.1.12.js'></script>
+
+    <!-- Prevent session bleed caused by single threaded embedded browser and sessionStorage API -->
+    <script src='./lib/js/fhir-client-cerner-additions-1.0.0.js'></script>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Application-level javascript-->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const resetButton = document.getElementById("resetButton");
+        resetButton.addEventListener("click", () => {
+          document.getElementById("patientId").value = "";
+        });
+      });
+    </script>
+</body>
+</html>

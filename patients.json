@@ -1,0 +1,88 @@
+[
+    {
+      "id": 1,
+      "name": "김철수",
+      "gender": "남성",
+      "age": 45,
+      "labResults": {
+        "height": 175,
+        "weight": 75,
+        "bloodPressure": "120/80",
+        "cholesterol": {
+          "LDL": 130,
+          "HDL": 50
+        }
+      },
+      "initialNurseAssessment": "정상",
+      "expectedSymptoms": "없음"
+    },
+    {
+      "id": 2,
+      "name": "이영희",
+      "gender": "여성",
+      "age": 30,
+      "labResults": {
+        "height": 165,
+        "weight": 60,
+        "bloodPressure": "110/70",
+        "cholesterol": {
+          "LDL": 110,
+          "HDL": 60
+        }
+      },
+      "initialNurseAssessment": "정상",
+      "expectedSymptoms": "없음"
+    },
+    {
+      "id": 3,
+      "name": "박민수",
+      "gender": "남성",
+      "age": 50,
+      "labResults": {
+        "height": 180,
+        "weight": 85,
+        "bloodPressure": "130/85",
+        "cholesterol": {
+          "LDL": 150,
+          "HDL": 45
+        }
+      },
+      "initialNurseAssessment": "고혈압 초기",
+      "expectedSymptoms": "두통, 어지러움"
+    },
+    {
+      "id": 4,
+      "name": "최수진",
+      "gender": "여성",
+      "age": 40,
+      "labResults": {
+        "height": 160,
+        "weight": 55,
+        "bloodPressure": "115/75",
+        "cholesterol": {
+          "LDL": 120,
+          "HDL": 65
+        }
+      },
+      "initialNurseAssessment": "정상",
+      "expectedSymptoms": "없음"
+    },
+    {
+      "id": 5,
+      "name": "김민지",
+      "gender": "여성",
+      "age": 35,
+      "labResults": {
+        "height": 170,
+        "weight": 68,
+        "bloodPressure": "125/80",
+        "cholesterol": {
+          "LDL": 140,
+          "HDL": 55
+        }
+      },
+      "initialNurseAssessment": "콜레스테롤 수치 경계",
+      "expectedSymptoms": "가슴 통증, 피로"
+    }
+  ]
+  
