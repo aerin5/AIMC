@@ -1,0 +1,224 @@
+{
+  "Patient": [
+    {
+      "resourceType": "Patient",
+      "id": "912302b4-609a-50bd-76eb-26dd24a49fdc",
+      "gender": "female",
+      "birthDate": "1930-12-17",
+      "age": 77
+    },
+    {
+      "resourceType": "Patient",
+      "id": "912302b4-609a-50bd-76eb-26dd24a49fdc",
+      "gender": "female",
+      "birthDate": "1930-12-17",
+      "age": 77
+    },
+    {
+      "resourceType": "Patient",
+      "id": "912302b4-609a-50bd-76eb-26dd24a49fdc",
+      "gender": "female",
+      "birthDate": "1930-12-17",
+      "age": 77
+    },
+    {
+      "resourceType": "Patient",
+      "id": "912302b4-609a-50bd-76eb-26dd24a49fdc",
+      "gender": "female",
+      "birthDate": "1930-12-17",
+      "age": 77
+    }
+  ],
+  "Condition": [
+    {
+      "resourceType": "Condition",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "code": {
+        "text": "Alzheimer's disease (disorder)"
+      },
+      "onsetDateTime": "2007-11-14 03:20:49+00:00"
+    },
+    {
+      "resourceType": "Condition",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "code": {
+        "text": "Alzheimer's disease (disorder)"
+      },
+      "onsetDateTime": "2007-11-14 03:20:49+00:00"
+    },
+    {
+      "resourceType": "Condition",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "code": {
+        "text": "Alzheimer's disease (disorder)"
+      },
+      "onsetDateTime": "2007-11-14 03:20:49+00:00"
+    },
+    {
+      "resourceType": "Condition",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "code": {
+        "text": "Alzheimer's disease (disorder)"
+      },
+      "onsetDateTime": "2007-11-14 03:20:49+00:00"
+    }
+  ],
+  "Observation": [
+    {
+      "resourceType": "Observation",
+      "effectiveDateTime": "2007-11-14 03:20:49+00:00",
+      "code": {
+        "text": "Total score [MMSE]"
+      },
+      "valueQuantity": {
+        "value": 19.988,
+        "unit": "{score}"
+      },
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "effectiveDateTime": "2007-11-14 03:20:49+00:00",
+      "code": {
+        "text": "Total score [MMSE]"
+      },
+      "valueQuantity": {
+        "value": 19.988,
+        "unit": "{score}"
+      },
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "effectiveDateTime": "2007-11-14 03:20:49+00:00",
+      "code": {
+        "text": "Total score [MMSE]"
+      },
+      "valueQuantity": {
+        "value": 19.988,
+        "unit": "{score}"
+      },
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "effectiveDateTime": "2007-11-14 03:20:49+00:00",
+      "code": {
+        "text": "Total score [MMSE]"
+      },
+      "valueQuantity": {
+        "value": 19.988,
+        "unit": "{score}"
+      },
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      }
+    }
+  ],
+  "MedicationRequest": [
+    {
+      "resourceType": "MedicationRequest",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "medicationCodeableConcept": {
+        "text": "Simvastatin 20 MG Oral Tablet"
+      },
+      "status": "active"
+    },
+    {
+      "resourceType": "MedicationRequest",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "medicationCodeableConcept": {
+        "text": "Simvastatin 20 MG Oral Tablet"
+      },
+      "status": "active"
+    },
+    {
+      "resourceType": "MedicationRequest",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "medicationCodeableConcept": {
+        "text": "Simvastatin 20 MG Oral Tablet"
+      },
+      "status": "active"
+    },
+    {
+      "resourceType": "MedicationRequest",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "medicationCodeableConcept": {
+        "text": "Simvastatin 20 MG Oral Tablet"
+      },
+      "status": "active"
+    }
+  ],
+  "Encounter": [
+    {
+      "resourceType": "Encounter",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "type": [
+        {
+          "text": "General examination of patient (procedure)"
+        }
+      ],
+      "status": "finished"
+    },
+    {
+      "resourceType": "Encounter",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "type": [
+        {
+          "text": "Encounter for check up (procedure)"
+        }
+      ],
+      "status": "finished"
+    },
+    {
+      "resourceType": "Encounter",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "type": [
+        {
+          "text": "Admission to surgical department"
+        }
+      ],
+      "status": "finished"
+    },
+    {
+      "resourceType": "Encounter",
+      "subject": {
+        "reference": "Patient/912302b4-609a-50bd-76eb-26dd24a49fdc"
+      },
+      "type": [
+        {
+          "text": "Encounter for problem (procedure)"
+        }
+      ],
+      "status": "finished"
+    }
+  ]
+}
