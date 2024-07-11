@@ -180,24 +180,28 @@
                           const observationData = await observationResponse.json();
   
                           if (observationData.entry && observationData.entry.length > 0) {
+                              let labDataDetails = `
+                                  <li class="list-group-item">
+                                      <div class="d-flex justify-content-between align-items-center">
+                                          랩 데이터 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#labData">상세</button>
+                                      </div>
+                                      <div id="labData" class="collapse">
+                              `;
                               observationData.entry.forEach(entry => {
                                   const observation = entry.resource;
                                   const code = observation.code?.coding?.[0]?.display || "Unknown";
                                   const value = observation.valueQuantity?.value || "Unknown";
                                   const unit = observation.valueQuantity?.unit || "";
   
-                                  const observationDetails = `
-                                      <li class="list-group-item">
-                                          <div class="d-flex justify-content-between align-items-center">
-                                              ${code} <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#observation-${observation.id}">상세</button>
-                                          </div>
-                                          <div id="observation-${observation.id}" class="collapse">
-                                              <p>값: ${value} ${unit}</p>
-                                          </div>
-                                      </li>
+                                  labDataDetails += `
+                                      <p>${code}: ${value} ${unit}</p>
                                   `;
-                                  patientDetails.innerHTML += observationDetails;
                               });
+                              labDataDetails += `
+                                      </div>
+                                  </li>
+                              `;
+                              patientDetails.innerHTML += labDataDetails;
                           } else {
                               const noObservationDetails = `
                                   <li class="list-group-item">
