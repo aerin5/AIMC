@@ -72,8 +72,6 @@
 
     <!-- Application-level javascript -->
     <script type="module">
-        import { fetchPatientData } from './get.js'; // 상대 경로로 get.js 파일에서 fetchPatientData 함수 가져오기
-
         document.addEventListener("DOMContentLoaded", () => {
             const searchButton = document.getElementById("searchButton");
             const resetButton = document.getElementById("resetButton");
@@ -115,8 +113,8 @@
                             listItem.innerHTML = `
                                 <div>
                                     <strong>${givenName} ${familyName}</strong>
-                                    <p>성별: ${patient.gender || "Unknown"}</p>
-                                    <p>생년월일: ${patient.birthDate || "Unknown"}</p>
+                                    <p>성별: ${patient.gender || "-"}</p>
+                                    <p>생년월일: ${patient.birthDate || "-"}</p>
                                     <button class="btn btn-primary select-patient-btn" data-id="${patient.id}" data-name="${givenName} ${familyName}">선택</button>
                                 </div>
                             `;
@@ -145,15 +143,21 @@
                 const patientId = document.getElementById("patientId").value;
 
                 if (patientId) {
-                    const data = await fetchPatientData(patientId);
-                    patientDetails.innerHTML = "";
+                    const response = await fetch(`http://hapi.fhir.org/baseR4/Patient/${patientId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/fhir+json', // 원하는 MIME 타입
+                        }
+                    });
 
-                    if (data) {
-                      alert(data.birthDate)
-                        const givenName = data.name?.[0]?.given?.join(" ");
-                        const familyName = data.name?.[0]?.family;
-                        const gender = data.gender;
-                        const birthDate = data.birthDate;
+                    if (response.ok) {
+                        const data = await response.json();
+                        patientDetails.innerHTML = "";
+
+                        const givenName = data.name?.[0]?.given?.join(" ") || "Unknown";
+                        const familyName = data.name?.[0]?.family || "Unknown";
+                        const gender = data.gender || "Unknown";
+                        const birthDate = data.birthDate || "Unknown";
                         const details = `
                             <li class="list-group-item">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -175,7 +179,7 @@
                                 </div>
                             </li>
                         `;
-                        
+
                         patientDetails.innerHTML = details;
                     } else {
                         patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
