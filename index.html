@@ -68,189 +68,175 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <!-- Application-level javascript -->
     <script type="module">
-        document.addEventListener("DOMContentLoaded", () => {
-            const searchButton = document.getElementById("searchButton");
-            const resetButton = document.getElementById("resetButton");
-            const patientNameInput = document.getElementById("patientName");
-            const patientDetails = document.getElementById("patientDetails");
-            const modalSearchButton = document.getElementById("modalSearchButton");
-            const modalPatientName = document.getElementById("modalPatientName");
-            const modalPatientResults = document.getElementById("modalPatientResults");
-
-            let selectedPatientId = null; // 선택된 환자의 ID를 저장하는 변수
-
-            // 모달창 표시
-            patientNameInput.addEventListener("click", () => {
-                $('#searchModal').modal('show'); // jQuery를 사용하여 모달 표시
-            });
-
-            // 모달창에서 환자 검색
-            modalSearchButton.addEventListener("click", async () => {
-                const patientName = modalPatientName.value;
-
-                // 환자 이름으로 검색하는 로직을 추가합니다.
-                const response = await fetch(`http://hapi.fhir.org/baseR4/Patient?name=${patientName}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/fhir+json', // 원하는 MIME 타입
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    modalPatientResults.innerHTML = "";
-
-                    if (data.entry && data.entry.length > 0) {
-                        data.entry.forEach(entry => {
-                            const patient = entry.resource;
-                            const givenName = patient.name?.[0]?.given?.join(" ") || "Unknown";
-                            const familyName = patient.name?.[0]?.family || "Unknown";
-                            const listItem = document.createElement("li");
-                            listItem.classList.add("list-group-item");
-                            listItem.innerHTML = `
-                                <div>
-                                    <strong>${givenName} ${familyName}</strong>
-                                    <p>성별: ${patient.gender || "-"}</p>
-                                    <p>생년월일: ${patient.birthDate || "-"}</p>
-                                    <button class="btn btn-primary select-patient-btn" data-id="${patient.id}" data-name="${givenName} ${familyName}">선택</button>
-                                </div>
-                            `;
-                            modalPatientResults.appendChild(listItem);
-                        });
-
-                        document.querySelectorAll(".select-patient-btn").forEach(button => {
-                            button.addEventListener("click", (event) => {
-                                selectedPatientId = event.target.getAttribute("data-id");
-                                const patientName = event.target.getAttribute("data-name");
-
-                                document.getElementById("patientId").value = selectedPatientId;
-                                document.getElementById("patientName").value = patientName;
-                                $('#searchModal').modal('hide'); // jQuery를 사용하여 모달 닫기
-                            });
-                        });
-                    } else {
-                        modalPatientResults.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
-                    }
-                } else {
-                    console.error('환자를 검색하는 중 오류가 발생했습니다.');
-                }
-            });
-
-            // 검색 버튼 클릭 시 환자 정보 가져오기
-            searchButton.addEventListener("click", async () => {
-                const patientId = document.getElementById("patientId").value;
-
-                if (patientId) {
-                    const patientResponse = await fetch(`http://hapi.fhir.org/baseR4/Patient/${patientId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/fhir+json', // 원하는 MIME 타입
-                        }
-                    });
-
-                    if (patientResponse.ok) {
-                        const patientData = await patientResponse.json();
-                        patientDetails.innerHTML = "";
-
-                        const givenName = patientData.name?.[0]?.given?.join(" ") || "Unknown";
-                        const familyName = patientData.name?.[0]?.family || "Unknown";
-                        const gender = patientData.gender || "Unknown";
-                        const birthDate = patientData.birthDate || "Unknown";
-
-                        // 콜레스테롤 수치를 가져오기 위한 API 호출
-                        const cholesterolResponse = await fetch(`http://hapi.fhir.org/baseR4/Observation?patient=${patientId}&code=2093-3`, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/fhir+json', // 원하는 MIME 타입
-                            }
-                        });
-
-                        let cholesterolValue = "-";
-                        let cholesterolUnit = "";
-
-                        if (cholesterolResponse.ok) {
-                            const cholesterolData = await cholesterolResponse.json();
-
-                            if (cholesterolData.entry && cholesterolData.entry.length > 0) {
-                                const cholesterolObservation = cholesterolData.entry[0].resource;
-                                cholesterolValue = cholesterolObservation.valueQuantity?.value || "-";
-                                cholesterolUnit = cholesterolObservation.valueQuantity?.unit || "";
-                            }
-                        } else {
-                            console.error('콜레스테롤 수치를 검색하는 중 오류가 발생했습니다.');
-                        }
-
-                        const details = `
-                            <li class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
-                                </div>
-                                <div id="basicInfo" class="collapse">
-                                    <p>이름: ${givenName} ${familyName}</p>
-                                    <p>성별: ${gender}</p>
-                                    <p>생년월일: ${birthDate}</p>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    콜레스테롤 수치 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#cholesterolInfo">상세</button>
-                                </div>
-                                <div id="cholesterolInfo" class="collapse">
-                                    <p>Cholesterol [Moles/volume] in Serum or Plasma: ${cholesterolValue} ${cholesterolUnit}</p>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    증상 예측 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#otherInfo">상세</button>
-                                </div>
-                                <div id="otherInfo" class="collapse">
-                                    <p>예상정보 : </p>
-                                </div>
-                            </li>                            
-                            <li class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    기타 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#otherInfo">상세</button>
-                                </div>
-                                <div id="otherInfo" class="collapse">
-                                    <p>ID: ${patientData.id}</p>
-                                    <!-- 추가적인 환자 정보를 여기에 표시할 수 있습니다 -->
-                                </div>
-                            </li>
-                        `;
-
-                        patientDetails.innerHTML = details;
-                    } else {
-                        patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
-                    }
-                } else {
-                    patientDetails.innerHTML = "<li class='list-group-item'>환자 ID를 입력해주세요</li>";
-                }
-            });
-
-            // 초기화 버튼 클릭 시 입력 필드 및 결과 초기화
-            resetButton.addEventListener("click", () => {
-                document.getElementById("patientId").value = "";
-                document.getElementById("patientName").value = "";
-                patientDetails.innerHTML = "";
-            });
-
-            // 엔터 키로 검색 (모달창)
-            modalPatientName.addEventListener("keypress", (event) => {
-                if (event.key === 'Enter') {
-                    modalSearchButton.click();
-                }
-            });
-
-            // 엔터 키로 검색 (검색창)
-            document.getElementById("patientId").addEventListener("keypress", (event) => {
-                if (event.key === 'Enter') {
-                    searchButton.click();
-                }
-            });
-        });
-    </script>
+      document.addEventListener("DOMContentLoaded", () => {
+          const searchButton = document.getElementById("searchButton");
+          const resetButton = document.getElementById("resetButton");
+          const patientNameInput = document.getElementById("patientName");
+          const patientDetails = document.getElementById("patientDetails");
+          const modalSearchButton = document.getElementById("modalSearchButton");
+          const modalPatientName = document.getElementById("modalPatientName");
+          const modalPatientResults = document.getElementById("modalPatientResults");
+  
+          let selectedPatientId = null;
+  
+          patientNameInput.addEventListener("click", () => {
+              $('#searchModal').modal('show');
+          });
+  
+          modalSearchButton.addEventListener("click", async () => {
+              const patientName = modalPatientName.value;
+  
+              const response = await fetch(`http://hapi.fhir.org/baseR4/Patient?name=${patientName}`, {
+                  method: 'GET',
+                  headers: {
+                      'Accept': 'application/fhir+json',
+                  }
+              });
+  
+              if (response.ok) {
+                  const data = await response.json();
+                  modalPatientResults.innerHTML = "";
+  
+                  if (data.entry && data.entry.length > 0) {
+                      data.entry.forEach(entry => {
+                          const patient = entry.resource;
+                          const givenName = patient.name?.[0]?.given?.join(" ") || "Unknown";
+                          const familyName = patient.name?.[0]?.family || "Unknown";
+                          const listItem = document.createElement("li");
+                          listItem.classList.add("list-group-item");
+                          listItem.innerHTML = `
+                              <div>
+                                  <strong>${givenName} ${familyName}</strong>
+                                  <p>성별: ${patient.gender || "-"}</p>
+                                  <p>생년월일: ${patient.birthDate || "-"}</p>
+                                  <button class="btn btn-primary select-patient-btn" data-id="${patient.id}" data-name="${givenName} ${familyName}">선택</button>
+                              </div>
+                          `;
+                          modalPatientResults.appendChild(listItem);
+                      });
+  
+                      document.querySelectorAll(".select-patient-btn").forEach(button => {
+                          button.addEventListener("click", (event) => {
+                              selectedPatientId = event.target.getAttribute("data-id");
+                              const patientName = event.target.getAttribute("data-name");
+  
+                              document.getElementById("patientId").value = selectedPatientId;
+                              document.getElementById("patientName").value = patientName;
+                              $('#searchModal').modal('hide');
+                          });
+                      });
+                  } else {
+                      modalPatientResults.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+                  }
+              } else {
+                  console.error('환자를 검색하는 중 오류가 발생했습니다.');
+              }
+          });
+  
+          searchButton.addEventListener("click", async () => {
+              const patientId = document.getElementById("patientId").value;
+  
+              if (patientId) {
+                  const patientResponse = await fetch(`http://hapi.fhir.org/baseR4/Patient/${patientId}`, {
+                      method: 'GET',
+                      headers: {
+                          'Accept': 'application/fhir+json',
+                      }
+                  });
+  
+                  if (patientResponse.ok) {
+                      const patientData = await patientResponse.json();
+                      patientDetails.innerHTML = "";
+  
+                      const givenName = patientData.name?.[0]?.given?.join(" ") || "Unknown";
+                      const familyName = patientData.name?.[0]?.family || "Unknown";
+                      const gender = patientData.gender || "Unknown";
+                      const birthDate = patientData.birthDate || "Unknown";
+  
+                      const details = `
+                          <li class="list-group-item">
+                              <div class="d-flex justify-content-between align-items-center">
+                                  환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
+                              </div>
+                              <div id="basicInfo" class="collapse">
+                                  <p>이름: ${givenName} ${familyName}</p>
+                                  <p>성별: ${gender}</p>
+                                  <p>생년월일: ${birthDate}</p>
+                              </div>
+                          </li>
+                      `;
+                      patientDetails.innerHTML = details;
+  
+                      // 관찰 기록을 가져오기 위한 API 호출
+                      const observationResponse = await fetch(`http://hapi.fhir.org/baseR4/Observation?patient=${patientId}`, {
+                          method: 'GET',
+                          headers: {
+                              'Accept': 'application/fhir+json',
+                          }
+                      });
+  
+                      if (observationResponse.ok) {
+                          const observationData = await observationResponse.json();
+  
+                          if (observationData.entry && observationData.entry.length > 0) {
+                              observationData.entry.forEach(entry => {
+                                  const observation = entry.resource;
+                                  const code = observation.code?.coding?.[0]?.display || "Unknown";
+                                  const value = observation.valueQuantity?.value || "Unknown";
+                                  const unit = observation.valueQuantity?.unit || "";
+  
+                                  const observationDetails = `
+                                      <li class="list-group-item">
+                                          <div class="d-flex justify-content-between align-items-center">
+                                              ${code} <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#observation-${observation.id}">상세</button>
+                                          </div>
+                                          <div id="observation-${observation.id}" class="collapse">
+                                              <p>값: ${value} ${unit}</p>
+                                          </div>
+                                      </li>
+                                  `;
+                                  patientDetails.innerHTML += observationDetails;
+                              });
+                          } else {
+                              const noObservationDetails = `
+                                  <li class="list-group-item">
+                                      <div class="d-flex justify-content-between align-items-center">
+                                          관찰 기록이 없습니다.
+                                      </div>
+                                  </li>
+                              `;
+                              patientDetails.innerHTML += noObservationDetails;
+                          }
+                      } else {
+                          console.error('관찰 기록을 검색하는 중 오류가 발생했습니다.');
+                      }
+                  } else {
+                      patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+                  }
+              } else {
+                  patientDetails.innerHTML = "<li class='list-group-item'>환자 ID를 입력해주세요</li>";
+              }
+          });
+  
+          resetButton.addEventListener("click", () => {
+              document.getElementById("patientId").value = "";
+              document.getElementById("patientName").value = "";
+              patientDetails.innerHTML = "";
+          });
+  
+          modalPatientName.addEventListener("keypress", (event) => {
+              if (event.key === 'Enter') {
+                  modalSearchButton.click();
+              }
+          });
+  
+          document.getElementById("patientId").addEventListener("keypress", (event) => {
+              if (event.key === 'Enter') {
+                  searchButton.click();
+              }
+          });
+      });
+  </script>
 </body>
 </html>
