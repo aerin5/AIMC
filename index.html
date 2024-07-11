@@ -8,6 +8,12 @@
     <link rel='stylesheet' type='text/css' href='/src/css/example-smart-app.css'>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .modal-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
     <div id='errors'></div>
@@ -22,6 +28,7 @@
     <div id="searchPage" class="search-page">
         <div class="search-box">
             <input type="text" id="patientId" class="form-control" placeholder="환자 ID">
+            <input type="text" id="patientName" class="form-control" placeholder="환자 이름" readonly>
             <button id="searchButton" class="btn btn-primary">검색</button>
             <button id="resetButton" class="btn btn-secondary">초기화</button>
         </div>
@@ -33,86 +40,157 @@
         </div>
     </div>
 
+    <!-- 모달 -->
+    <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">환자 검색</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="modalPatientName" class="form-control" placeholder="환자 이름">
+                    <button id="modalSearchButton" class="btn btn-primary mt-2">검색</button>
+                    <ul id="modalPatientResults" class="list-group mt-2">
+                        <!-- 모달 검색 결과가 여기 표시됩니다 -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FHIR Client JS Library -->
     <script src='./lib/js/fhir-client-v0.1.12.js'></script>
-
     <!-- Prevent session bleed caused by single threaded embedded browser and sessionStorage API -->
     <script src='./lib/js/fhir-client-cerner-additions-1.0.0.js'></script>
-
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Application-level javascript-->
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const searchButton = document.getElementById("searchButton");
-        const resetButton = document.getElementById("resetButton");
-        const patientDetails = document.getElementById("patientDetails");
+    <!-- Application-level javascript -->
+    <script type="module">
+        import { fetchPatientData } from './get.js'; // 상대 경로로 get.js 파일에서 fetchPatientData 함수 가져오기
 
-        searchButton.addEventListener("click", () => {
-          const patientId = document.getElementById("patientId").value ;
-          const patientName = document.getElementById("patientname").value ;
-          fetch('patients.json')
-            .then(response => response.json())
-            .then(data => {
-              const patient_id = data.find(p => p.id == patientId);
-              const patient_name = data.find(p => p.id == patientName);
-              patientDetails.innerHTML = "";
-              if (patient_id) {
-                const details = `
-                  <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                      환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
-                    </div>
-                    <div id="basicInfo" class="collapse">
-                      <p>이름: ${patient.name}</p>
-                      <p>성별: ${patient.gender}</p>
-                      <p>나이: ${patient.age}</p>
-                      <p>키: ${patient.labResults.height}</p>
-                      <p>몸무게: ${patient.labResults.weight}</p>
-                    </div>
-                  </li>
-                  <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                      랩 결과 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#labResults">상세</button>
-                    </div>
-                    <div id="labResults" class="collapse">
-                      <p>혈압: ${patient.labResults.bloodPressure}</p>
-                      <p>LDL 콜레스테롤: ${patient.labResults.cholesterol.LDL}</p>
-                      <p>HDL 콜레스테롤: ${patient.labResults.cholesterol.HDL}</p>
-                    </div>
-                  </li>
-                  <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                      간호 초기 평가 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#initialNurseAssessment">상세</button>
-                    </div>
-                    <div id="initialNurseAssessment" class="collapse">
-                      <p>${patient.initialNurseAssessment}</p>
-                    </div>
-                  </li>
-                  <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                      예상 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#expectedSymptoms">상세</button>
-                    </div>
-                    <div id="expectedSymptoms" class="collapse">
-                      <p>${patient.expectedSymptoms}</p>
-                    </div>
-                  </li>
-                `;
-                patientDetails.innerHTML = details;
-              } else {
-                patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
-              }
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchButton = document.getElementById("searchButton");
+            const resetButton = document.getElementById("resetButton");
+            const patientNameInput = document.getElementById("patientName");
+            const patientDetails = document.getElementById("patientDetails");
+            const searchModal = new bootstrap.Modal(document.getElementById('searchModal'));
+            const modalSearchButton = document.getElementById("modalSearchButton");
+            const modalPatientName = document.getElementById("modalPatientName");
+            const modalPatientResults = document.getElementById("modalPatientResults");
+
+            let selectedPatientId = null; // 선택된 환자의 ID를 저장하는 변수
+
+            patientNameInput.addEventListener("click", () => {
+                searchModal.show();
+            });
+
+            modalSearchButton.addEventListener("click", async () => {
+                const patientName = modalPatientName.value;
+
+                // 환자 이름으로 검색하는 로직을 추가합니다.
+                const response = await fetch(`http://hapi.fhir.org/baseR4/Patient?name=${patientName}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/fhir+json', // 원하는 MIME 타입
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    modalPatientResults.innerHTML = "";
+
+                    if (data.entry && data.entry.length > 0) {
+                        data.entry.forEach(entry => {
+                            const patient = entry.resource;
+                            const givenName = patient.name?.[0]?.given?.join(" ") || "Unknown";
+                            const familyName = patient.name?.[0]?.family || "Unknown";
+                            const listItem = document.createElement("li");
+                            listItem.classList.add("list-group-item");
+                            listItem.innerHTML = `
+                                <div>
+                                    <strong>${givenName} ${familyName}</strong>
+                                    <p>성별: ${patient.gender || "Unknown"}</p>
+                                    <p>생년월일: ${patient.birthDate || "Unknown"}</p>
+                                    <button class="btn btn-primary select-patient-btn" data-id="${patient.id}" data-name="${givenName} ${familyName}">선택</button>
+                                </div>
+                            `;
+                            modalPatientResults.appendChild(listItem);
+                        });
+
+                        document.querySelectorAll(".select-patient-btn").forEach(button => {
+                            button.addEventListener("click", (event) => {
+                                selectedPatientId = event.target.getAttribute("data-id");
+                                const patientName = event.target.getAttribute("data-name");
+
+                                document.getElementById("patientId").value = selectedPatientId;
+                                document.getElementById("patientName").value = patientName;
+                                searchModal.hide();
+                            });
+                        });
+                    } else {
+                        modalPatientResults.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+                    }
+                } else {
+                    console.error('환자를 검색하는 중 오류가 발생했습니다.');
+                }
+            });
+
+            searchButton.addEventListener("click", async () => {
+                const patientId = document.getElementById("patientId").value;
+
+                if (patientId) {
+                    const data = await fetchPatientData(patientId);
+                    patientDetails.innerHTML = "";
+
+                    if (data) {
+                      alert(data.birthDate)
+                        const givenName = data.name?.[0]?.given?.join(" ");
+                        const familyName = data.name?.[0]?.family;
+                        const gender = data.gender;
+                        const birthDate = data.birthDate;
+                        const details = `
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
+                                </div>
+                                <div id="basicInfo" class="collapse">
+                                    <p>이름: ${givenName} ${familyName}</p>
+                                    <p>성별: ${gender}</p>
+                                    <p>생년월일: ${birthDate}</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    기타 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#otherInfo">상세</button>
+                                </div>
+                                <div id="otherInfo" class="collapse">
+                                    <p>ID: ${data.id}</p>
+                                    <!-- 추가적인 환자 정보를 여기에 표시할 수 있습니다 -->
+                                </div>
+                            </li>
+                        `;
+                        
+                        patientDetails.innerHTML = details;
+                    } else {
+                        patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+                    }
+                } else {
+                    patientDetails.innerHTML = "<li class='list-group-item'>환자 ID를 입력해주세요</li>";
+                }
+            });
+
+            resetButton.addEventListener("click", () => {
+                document.getElementById("patientId").value = "";
+                document.getElementById("patientName").value = "";
+                patientDetails.innerHTML = "";
             });
         });
-
-        resetButton.addEventListener("click", () => {
-          document.getElementById("patientId").value = "";
-          patientDetails.innerHTML = "";
-        });
-      });
     </script>
 </body>
 </html>
