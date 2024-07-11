@@ -33,7 +33,6 @@
             <button id="resetButton" class="btn btn-secondary">초기화</button>
         </div>
         <div id="resultBox" class="result-box">
-            <p>검색 결과:</p>
             <ul id="patientDetails" class="list-group">
                 <!-- 검색 결과가 여기 표시됩니다 -->
             </ul>
@@ -77,17 +76,18 @@
             const resetButton = document.getElementById("resetButton");
             const patientNameInput = document.getElementById("patientName");
             const patientDetails = document.getElementById("patientDetails");
-            const searchModal = new bootstrap.Modal(document.getElementById('searchModal'));
             const modalSearchButton = document.getElementById("modalSearchButton");
             const modalPatientName = document.getElementById("modalPatientName");
             const modalPatientResults = document.getElementById("modalPatientResults");
 
             let selectedPatientId = null; // 선택된 환자의 ID를 저장하는 변수
 
+            // 모달창 표시
             patientNameInput.addEventListener("click", () => {
-                searchModal.show();
+                $('#searchModal').modal('show'); // jQuery를 사용하여 모달 표시
             });
 
+            // 모달창에서 환자 검색
             modalSearchButton.addEventListener("click", async () => {
                 const patientName = modalPatientName.value;
 
@@ -128,7 +128,7 @@
 
                                 document.getElementById("patientId").value = selectedPatientId;
                                 document.getElementById("patientName").value = patientName;
-                                searchModal.hide();
+                                $('#searchModal').modal('hide'); // jQuery를 사용하여 모달 닫기
                             });
                         });
                     } else {
@@ -139,6 +139,7 @@
                 }
             });
 
+            // 검색 버튼 클릭 시 환자 정보 가져오기
             searchButton.addEventListener("click", async () => {
                 const patientId = document.getElementById("patientId").value;
 
@@ -189,10 +190,25 @@
                 }
             });
 
+            // 초기화 버튼 클릭 시 입력 필드 및 결과 초기화
             resetButton.addEventListener("click", () => {
                 document.getElementById("patientId").value = "";
                 document.getElementById("patientName").value = "";
                 patientDetails.innerHTML = "";
+            });
+
+            // 엔터 키로 검색 (모달창)
+            modalPatientName.addEventListener("keypress", (event) => {
+                if (event.key === 'Enter') {
+                    modalSearchButton.click();
+                }
+            });
+
+            // 엔터 키로 검색 (검색창)
+            document.getElementById("patientId").addEventListener("keypress", (event) => {
+                if (event.key === 'Enter') {
+                    searchButton.click();
+                }
             });
         });
     </script>
