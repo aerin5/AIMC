@@ -52,13 +52,15 @@
         const patientDetails = document.getElementById("patientDetails");
 
         searchButton.addEventListener("click", () => {
-          const patientId = document.getElementById("patientId").value;
+          const patientId = document.getElementById("patientId").value ;
+          const patientName = document.getElementById("patientname").value ;
           fetch('patients.json')
             .then(response => response.json())
             .then(data => {
-              const patient = data.find(p => p.id == patientId);
+              const patient_id = data.find(p => p.id == patientId);
+              const patient_name = data.find(p => p.id == patientName);
               patientDetails.innerHTML = "";
-              if (patient) {
+              if (patient_id) {
                 const details = `
                   <li class="list-group-item">
                     <div class="d-flex justify-content-between align-items-center">
