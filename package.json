@@ -1,0 +1,13 @@
+{
+    "name": "example-smart-app",
+    "version": "1.0.0",
+    "main": "post.js",
+    "type": "module",
+    "scripts": {
+      "start": "node post.js"
+    },
+    "dependencies": {
+      "node-fetch": "^3.0.0"
+    }
+  }
+  
