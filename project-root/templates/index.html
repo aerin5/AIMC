@@ -8,12 +8,8 @@
     <link rel='stylesheet' type='text/css' href='/static/css/example-smart-app.css'>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .modal-body {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
 </head>
 <body>
     <div id='errors'></div>
@@ -157,12 +153,28 @@
                         const details = `
                             <li class="list-group-item">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
-                                </div>
-                                <div id="basicInfo" class="collapse">
-                                    <p>이름: ${givenName} ${familyName}</p>
-                                    <p>성별: ${gender}</p>
-                                    <p>생년월일: ${birthDate}</p>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Clinical Examination</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>이름</td>
+                                                <td>${givenName} ${familyName}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>성별</td>
+                                                <td>${gender}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>생년월일</td>
+                                                <td>${birthDate}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </li>
                         `;
@@ -181,23 +193,39 @@
     
                             if (observationData.entry && observationData.entry.length > 0) {
                                 let labDataDetails = `
-                                    <li class="list-group-item">
+                                    <li class="list-group-item lab-data-section">
                                         <div class="d-flex justify-content-between align-items-center">
                                             랩 데이터 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#labData">상세</button>
                                         </div>
+                                        <p></p>
                                         <div id="labData" class="collapse">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Clinical Examination</th>
+                                                        <th class="text-right">Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
                                 `;
                                 observationData.entry.forEach(entry => {
                                     const observation = entry.resource;
                                     const code = observation.code?.coding?.[0]?.display || "Unknown";
-                                    const value = observation.valueQuantity?.value || "Unknown";
-                                    const unit = observation.valueQuantity?.unit || "";
+                                    if (code !== "Unknown") {
+                                        const value = observation.valueQuantity?.value || "Unknown";
+                                        const unit = observation.valueQuantity?.unit || "";
     
-                                    labDataDetails += `
-                                        <p>${code}: ${value} ${unit}</p>
-                                    `;
+                                        labDataDetails += `
+                                            <tr>
+                                                <td>${code}</td>
+                                                <td class="text-right">${value} ${unit}</td>
+                                            </tr>
+                                        `;
+                                    }
                                 });
                                 labDataDetails += `
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </li>
                                 `;
@@ -235,8 +263,9 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         예측 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#predictedSymptoms">상세</button>
                                     </div>
+                                    <p></p>
                                     <div id="predictedSymptoms" class="collapse">
-                                        <p>${predictionData.prediction}</p>
+                                        <p> ▶ ${predictionData.prediction}</p>
                                     </div>
                                 </li>
                             `;

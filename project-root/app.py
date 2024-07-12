@@ -42,7 +42,7 @@ def predict():
     else:
         prediction_str = random.choice(result_mapping[:-1])  # 'Diabetes self management plan'을 제외한 리스트에서 선택
 
-    print(result)  # 결과 배열 추출
+    # print(result)  # 결과 배열 추출
 
     # 결과를 JSON 응답으로 반환
     return jsonify({'prediction': prediction_str})

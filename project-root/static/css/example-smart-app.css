@@ -80,7 +80,48 @@ body, html {
   background-color: #0056b3;
 }
 
+/* 여유 공간 추가 */
+.collapse.show {
+  margin-bottom: 15px;
+}
+
+/* 랩 데이터 표 위에 여유 공간 추가 */
+.lab-data-section {
+  margin-top: 20px; /* 랩 데이터 표 위에 여유 공간 추가 */
+  padding-top: 10px; /* 버튼과 표 사이에 여유 공간 추가 */
+}
+
+/* 관찰 기록 테이블 스타일 */
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.table .text-right {
+  text-align: right;
+}
+
 /* 반응형 디자인 */
+@media (max-width: 1024px) {
+  .search-box {
+    flex-direction: column;
+  }
+
+  .search-box input, .search-box button {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  .result-box li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .result-box li .details-btn {
+    align-self: flex-end;
+    margin-top: 5px;
+  }
+}
+
 @media (max-width: 768px) {
   .search-box {
     flex-direction: column;
@@ -90,9 +131,7 @@ body, html {
     width: 100%;
     margin: 5px 0;
   }
-}
 
-@media (max-width: 480px) {
   .result-box li {
     flex-direction: column;
     align-items: flex-start;
