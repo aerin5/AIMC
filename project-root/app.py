@@ -39,7 +39,7 @@ def predict():
     
     # 예측 결과에 따른 문자열 반환
     if prediction[0] == 0:
-        prediction_str = 'Diabetes self management plan'
+        prediction_str = 'Hypoglycemia'
         query_result = result_mapping_1  # '저혈당 증상 유무', '혈당 수치 monitoring', 'medicatioin 복약 확인' 모두 반환
     else:
         prediction_str = random.choice(result_mapping[:-1])  # 'Diabetes self management plan'을 제외한 리스트에서 선택
