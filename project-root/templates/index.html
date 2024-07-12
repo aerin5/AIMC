@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <title>의딥人</title>
+
+    <link rel='stylesheet' type='text/css' href='/static/css/example-smart-app.css'>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .modal-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id='errors'></div>
+    <div id="loading" class="spinner"></div>
+    
+    <!-- 상단 바 -->
+    <div class="header">
+        <h2>환자 관리</h2>
+    </div>
+
+    <!-- 검색창 -->
+    <div id="searchPage" class="search-page">
+        <div class="search-box">
+            <input type="text" id="patientId" class="form-control" placeholder="환자 ID">
+            <input type="text" id="patientName" class="form-control" placeholder="환자 이름" readonly>
+            <button id="searchButton" class="btn btn-primary">검색</button>
+            <button id="resetButton" class="btn btn-secondary">초기화</button>
+        </div>
+        <div id="resultBox" class="result-box">
+            <ul id="patientDetails" class="list-group">
+                <!-- 검색 결과가 여기 표시됩니다 -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- 모달 -->
+    <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">환자 검색</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="modalPatientName" class="form-control" placeholder="환자 이름">
+                    <button id="modalSearchButton" class="btn btn-primary mt-2">검색</button>
+                    <ul id="modalPatientResults" class="list-group mt-2">
+                        <!-- 모달 검색 결과가 여기 표시됩니다 -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FHIR Client JS Library -->
+    <script src='/static/js/fhir-client-v0.1.14.min.js'></script>
+    <script src='/static/js/fhir-client-cerner-additions-1.0.0.js'></script>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="module">
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchButton = document.getElementById("searchButton");
+            const resetButton = document.getElementById("resetButton");
+            const patientNameInput = document.getElementById("patientName");
+            const patientDetails = document.getElementById("patientDetails");
+            const modalSearchButton = document.getElementById("modalSearchButton");
+            const modalPatientName = document.getElementById("modalPatientName");
+            const modalPatientResults = document.getElementById("modalPatientResults");
+    
+            let selectedPatientId = null;
+    
+            patientNameInput.addEventListener("click", () => {
+                $('#searchModal').modal('show');
+            });
+    
+            modalSearchButton.addEventListener("click", async () => {
+                const patientName = modalPatientName.value;
+    
+                const response = await fetch(`http://hapi.fhir.org/baseR4/Patient?name=${patientName}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/fhir+json',
+                    }
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    modalPatientResults.innerHTML = "";
+    
+                    if (data.entry && data.entry.length > 0) {
+                        data.entry.forEach(entry => {
+                            const patient = entry.resource;
+                            const givenName = patient.name?.[0]?.given?.join(" ") || "Unknown";
+                            const familyName = patient.name?.[0]?.family || "Unknown";
+                            const listItem = document.createElement("li");
+                            listItem.classList.add("list-group-item");
+                            listItem.innerHTML = `
+                                <div>
+                                    <strong>${givenName} ${familyName}</strong>
+                                    <p>성별: ${patient.gender || "-"}</p>
+                                    <p>생년월일: ${patient.birthDate || "-"}</p>
+                                    <button class="btn btn-primary select-patient-btn" data-id="${patient.id}" data-name="${givenName} ${familyName}">선택</button>
+                                </div>
+                            `;
+                            modalPatientResults.appendChild(listItem);
+                        });
+    
+                        document.querySelectorAll(".select-patient-btn").forEach(button => {
+                            button.addEventListener("click", (event) => {
+                                selectedPatientId = event.target.getAttribute("data-id");
+                                const patientName = event.target.getAttribute("data-name");
+    
+                                document.getElementById("patientId").value = selectedPatientId;
+                                document.getElementById("patientName").value = patientName;
+                                $('#searchModal').modal('hide');
+                            });
+                        });
+                    } else {
+                        modalPatientResults.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+                    }
+                } else {
+                    console.error('환자를 검색하는 중 오류가 발생했습니다.');
+                }
+            });
+    
+            searchButton.addEventListener("click", async () => {
+                const patientId = document.getElementById("patientId").value;
+    
+                if (patientId) {
+                    const patientResponse = await fetch(`http://hapi.fhir.org/baseR4/Patient/${patientId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/fhir+json',
+                        }
+                    });
+    
+                    if (patientResponse.ok) {
+                        const patientData = await patientResponse.json();
+                        patientDetails.innerHTML = "";
+    
+                        const givenName = patientData.name?.[0]?.given?.join(" ") || "Unknown";
+                        const familyName = patientData.name?.[0]?.family || "Unknown";
+                        const gender = patientData.gender || "Unknown";
+                        const birthDate = patientData.birthDate || "Unknown";
+    
+                        const details = `
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
+                                </div>
+                                <div id="basicInfo" class="collapse">
+                                    <p>이름: ${givenName} ${familyName}</p>
+                                    <p>성별: ${gender}</p>
+                                    <p>생년월일: ${birthDate}</p>
+                                </div>
+                            </li>
+                        `;
+                        patientDetails.innerHTML = details;
+    
+                        // 관찰 기록을 가져오기 위한 API 호출
+                        const observationResponse = await fetch(`http://hapi.fhir.org/baseR4/Observation?patient=${patientId}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/fhir+json',
+                            }
+                        });
+    
+                        if (observationResponse.ok) {
+                            const observationData = await observationResponse.json();
+    
+                            if (observationData.entry && observationData.entry.length > 0) {
+                                let labDataDetails = `
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            랩 데이터 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#labData">상세</button>
+                                        </div>
+                                        <div id="labData" class="collapse">
+                                `;
+                                observationData.entry.forEach(entry => {
+                                    const observation = entry.resource;
+                                    const code = observation.code?.coding?.[0]?.display || "Unknown";
+                                    const value = observation.valueQuantity?.value || "Unknown";
+                                    const unit = observation.valueQuantity?.unit || "";
+    
+                                    labDataDetails += `
+                                        <p>${code}: ${value} ${unit}</p>
+                                    `;
+                                });
+                                labDataDetails += `
+                                        </div>
+                                    </li>
+                                `;
+                                patientDetails.innerHTML += labDataDetails;
+                            } else {
+                                const noObservationDetails = `
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            관찰 기록이 없습니다.
+                                        </div>
+                                    </li>
+                                `;
+                                patientDetails.innerHTML += noObservationDetails;
+                            }
+                        } else {
+                            console.error('관찰 기록을 검색하는 중 오류가 발생했습니다.');
+                        }
+    
+                        // 예측 증상 데이터를 가져오기 위한 API 호출
+                        const predictResponse = await fetch('http://192.168.0.146:8080/predict', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                input: [1, 31, -0.056441, 1]  // 실제 입력 데이터를 여기서 제공
+                            })
+                        });
+    
+                        let predictedSymptomsDetails = '';
+                        if (predictResponse.ok) {
+                            const predictionData = await predictResponse.json();
+                            predictedSymptomsDetails = `
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        예측 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#predictedSymptoms">상세</button>
+                                    </div>
+                                    <div id="predictedSymptoms" class="collapse">
+                                        <p>${predictionData.prediction}</p>
+                                    </div>
+                                </li>
+                            `;
+                        } else {
+                            predictedSymptomsDetails = `
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        예측 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#predictedSymptoms">상세</button>
+                                    </div>
+                                    <div id="predictedSymptoms" class="collapse">
+                                        <p>예상 정보 없음</p>
+                                    </div>
+                                </li>
+                            `;
+                        }
+                        patientDetails.innerHTML += predictedSymptomsDetails;
+    
+                    } else {
+                        patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+                    }
+                } else {
+                    patientDetails.innerHTML = "<li class='list-group-item'>환자 ID를 입력해주세요</li>";
+                }
+            });
+    
+            resetButton.addEventListener("click", () => {
+                document.getElementById("patientId").value = "";
+                document.getElementById("patientName").value = "";
+                patientDetails.innerHTML = "";
+            });
+    
+            modalPatientName.addEventListener("keypress", (event) => {
+                if (event.key === 'Enter') {
+                    modalSearchButton.click();
+                }
+            });
+    
+            document.getElementById("patientId").addEventListener("keypress", (event) => {
+                if (event.key === 'Enter') {
+                    searchButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

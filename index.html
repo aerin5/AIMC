@@ -135,108 +135,132 @@
           });
   
           searchButton.addEventListener("click", async () => {
-    const patientId = document.getElementById("patientId").value;
-
-    if (patientId) {
-        const patientResponse = await fetch(`http://hapi.fhir.org/baseR4/Patient/${patientId}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/fhir+json',
-            }
-        });
-
-        if (patientResponse.ok) {
-            const patientData = await patientResponse.json();
-            patientDetails.innerHTML = "";
-
-            const givenName = patientData.name?.[0]?.given?.join(" ") || "Unknown";
-            const familyName = patientData.name?.[0]?.family || "Unknown";
-            const gender = patientData.gender || "Unknown";
-            const birthDate = patientData.birthDate || "Unknown";
-
-            const details = `
-                <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                        환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
-                    </div>
-                    <div id="basicInfo" class="collapse">
-                        <p>이름: ${givenName} ${familyName}</p>
-                        <p>성별: ${gender}</p>
-                        <p>생년월일: ${birthDate}</p>
-                    </div>
-                </li>
-            `;
-            patientDetails.innerHTML = details;
-
-            // 관찰 기록을 가져오기 위한 API 호출
-            const observationResponse = await fetch(`http://hapi.fhir.org/baseR4/Observation?patient=${patientId}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/fhir+json',
-                }
-            });
-
-            if (observationResponse.ok) {
-                const observationData = await observationResponse.json();
-
-                if (observationData.entry && observationData.entry.length > 0) {
-                    let labDataDetails = `
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                랩 데이터 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#labData">상세</button>
-                            </div>
-                            <div id="labData" class="collapse">
-                    `;
-                    observationData.entry.forEach(entry => {
-                        const observation = entry.resource;
-                        const code = observation.code?.coding?.[0]?.display || "Unknown";
-                        const value = observation.valueQuantity?.value || "Unknown";
-                        const unit = observation.valueQuantity?.unit || "";
-
-                        labDataDetails += `
-                            <p>${code}: ${value} ${unit}</p>
-                        `;
-                    });
-                    labDataDetails += `
-                            </div>
-                        </li>
-                    `;
-                    patientDetails.innerHTML += labDataDetails;
-                } else {
-                    const noObservationDetails = `
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                관찰 기록이 없습니다.
-                            </div>
-                        </li>
-                    `;
-                    patientDetails.innerHTML += noObservationDetails;
-                }
-            } else {
-                console.error('관찰 기록을 검색하는 중 오류가 발생했습니다.');
-            }
-
-            // 예측 증상 탭 추가
-            const predictedSymptomsDetails = `
-                <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                        예측 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#predictedSymptoms">상세</button>
-                    </div>
-                    <div id="predictedSymptoms" class="collapse">
-                        <p>예상 정보 없음</p>
-                    </div>
-                </li>
-            `;
-            patientDetails.innerHTML += predictedSymptomsDetails;
-
-        } else {
-            patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
-        }
-    } else {
-        patientDetails.innerHTML = "<li class='list-group-item'>환자 ID를 입력해주세요</li>";
-    }
-});
-
+              const patientId = document.getElementById("patientId").value;
+  
+              if (patientId) {
+                  const patientResponse = await fetch(`http://hapi.fhir.org/baseR4/Patient/${patientId}`, {
+                      method: 'GET',
+                      headers: {
+                          'Accept': 'application/fhir+json',
+                      }
+                  });
+  
+                  if (patientResponse.ok) {
+                      const patientData = await patientResponse.json();
+                      patientDetails.innerHTML = "";
+  
+                      const givenName = patientData.name?.[0]?.given?.join(" ") || "Unknown";
+                      const familyName = patientData.name?.[0]?.family || "Unknown";
+                      const gender = patientData.gender || "Unknown";
+                      const birthDate = patientData.birthDate || "Unknown";
+  
+                      const details = `
+                          <li class="list-group-item">
+                              <div class="d-flex justify-content-between align-items-center">
+                                  환자 기본 정보 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#basicInfo">상세</button>
+                              </div>
+                              <div id="basicInfo" class="collapse">
+                                  <p>이름: ${givenName} ${familyName}</p>
+                                  <p>성별: ${gender}</p>
+                                  <p>생년월일: ${birthDate}</p>
+                              </div>
+                          </li>
+                      `;
+                      patientDetails.innerHTML = details;
+  
+                      // 관찰 기록을 가져오기 위한 API 호출
+                      const observationResponse = await fetch(`http://hapi.fhir.org/baseR4/Observation?patient=${patientId}`, {
+                          method: 'GET',
+                          headers: {
+                              'Accept': 'application/fhir+json',
+                          }
+                      });
+  
+                      if (observationResponse.ok) {
+                          const observationData = await observationResponse.json();
+  
+                          if (observationData.entry && observationData.entry.length > 0) {
+                              let labDataDetails = `
+                                  <li class="list-group-item">
+                                      <div class="d-flex justify-content-between align-items-center">
+                                          랩 데이터 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#labData">상세</button>
+                                      </div>
+                                      <div id="labData" class="collapse">
+                              `;
+                              observationData.entry.forEach(entry => {
+                                  const observation = entry.resource;
+                                  const code = observation.code?.coding?.[0]?.display || "Unknown";
+                                  const value = observation.valueQuantity?.value || "Unknown";
+                                  const unit = observation.valueQuantity?.unit || "";
+  
+                                  labDataDetails += `
+                                      <p>${code}: ${value} ${unit}</p>
+                                  `;
+                              });
+                              labDataDetails += `
+                                      </div>
+                                  </li>
+                              `;
+                              patientDetails.innerHTML += labDataDetails;
+                          } else {
+                              const noObservationDetails = `
+                                  <li class="list-group-item">
+                                      <div class="d-flex justify-content-between align-items-center">
+                                          관찰 기록이 없습니다.
+                                      </div>
+                                  </li>
+                              `;
+                              patientDetails.innerHTML += noObservationDetails;
+                          }
+                      } else {
+                          console.error('관찰 기록을 검색하는 중 오류가 발생했습니다.');
+                      }
+  
+                      // 예측 증상 데이터를 가져오기 위한 API 호출
+                      const predictResponse = await fetch('http://127.0.0.1:8080/predict', {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                              input: [1, 0.5]  // 실제 입력 데이터를 여기서 제공
+                          })
+                      });
+  
+                      let predictedSymptomsDetails = '';
+                      if (predictResponse.ok) {
+                          const predictionData = await predictResponse.json();
+                          predictedSymptomsDetails = `
+                              <li class="list-group-item">
+                                  <div class="d-flex justify-content-between align-items-center">
+                                      예측 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#predictedSymptoms">상세</button>
+                                  </div>
+                                  <div id="predictedSymptoms" class="collapse">
+                                      <p>${predictionData.prediction}</p>
+                                  </div>
+                              </li>
+                          `;
+                      } else {
+                          predictedSymptomsDetails = `
+                              <li class="list-group-item">
+                                  <div class="d-flex justify-content-between align-items-center">
+                                      예측 증상 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#predictedSymptoms">상세</button>
+                                  </div>
+                                  <div id="predictedSymptoms" class="collapse">
+                                      <p>예상 정보 없음</p>
+                                  </div>
+                              </li>
+                          `;
+                      }
+                      patientDetails.innerHTML += predictedSymptomsDetails;
+  
+                  } else {
+                      patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";
+                  }
+              } else {
+                  patientDetails.innerHTML = "<li class='list-group-item'>환자 ID를 입력해주세요</li>";
+              }
+          });
   
           resetButton.addEventListener("click", () => {
               document.getElementById("patientId").value = "";

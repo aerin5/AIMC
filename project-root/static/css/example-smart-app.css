@@ -1,0 +1,105 @@
+body, html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  width: 100%;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  flex-shrink: 0;
+}
+
+.search-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%; /* 전체 화면을 차지하도록 설정 */
+  padding: 20px;
+  box-sizing: border-box; /* 패딩과 보더를 포함하여 크기 계산 */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  overflow-y: auto; /* 내용이 많을 경우 스크롤 가능 */
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.search-box input {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.search-box button {
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.result-box {
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.result-box ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.result-box li {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.result-box li .details-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.result-box li .details-btn:hover {
+  background-color: #0056b3;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .search-box {
+    flex-direction: column;
+  }
+
+  .search-box input, .search-box button {
+    width: 100%;
+    margin: 5px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-box li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .result-box li .details-btn {
+    align-self: flex-end;
+    margin-top: 5px;
+  }
+}
