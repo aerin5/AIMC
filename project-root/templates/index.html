@@ -256,6 +256,7 @@
                         });
     
                         let predictedSymptomsDetails = '';
+                        let questionDetails = '';
                         if (predictResponse.ok) {
                             const predictionData = await predictResponse.json();
                             predictedSymptomsDetails = `
@@ -265,7 +266,30 @@
                                     </div>
                                     <p></p>
                                     <div id="predictedSymptoms" class="collapse">
-                                        <p> ▶ ${predictionData.prediction}</p>
+                                        <p> ▷ ${predictionData.prediction}</p>
+                                    </div>
+                                </li>
+                            `;
+                            const checklistItems = predictionData.query.map((item, index) => `
+                                <tr>
+                                    <td>${index + 1}) ${item}</td>
+                                    <td class="text-right">
+                                        <input class="form-check-input" type="checkbox" id="checklistItem${index}" value="${item}">
+                                    </td>
+                                </tr>
+                            `).join('');
+                            questionDetails = `
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        체크리스트 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#checklist">상세</button>
+                                    </div>
+                                    <p></p>
+                                    <div id="checklist" class="collapse">
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                                ${checklistItems}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </li>
                             `;
@@ -280,8 +304,20 @@
                                     </div>
                                 </li>
                             `;
+                            questionDetails = `
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        체크리스트 <button class="btn btn-info details-btn" data-toggle="collapse" data-target="#checklist">상세</button>
+                                    </div>
+                                    <div id="checklist" class="collapse">
+                                        <p>체크리스트 없음</p>
+                                    </div>
+                                </li>
+                            `;
                         }
+                        
                         patientDetails.innerHTML += predictedSymptomsDetails;
+                        patientDetails.innerHTML += questionDetails;
     
                     } else {
                         patientDetails.innerHTML = "<li class='list-group-item'>환자를 찾을 수 없습니다</li>";

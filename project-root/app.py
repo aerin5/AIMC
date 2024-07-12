@@ -35,17 +35,20 @@ def predict():
                       'Fracture care', 'Inpatient care plan (record artifact)',
                       'Lifestyle education regarding hypertension',
                       'Diabetes self management plan']
+    result_mapping_1 = ['저혈당 증상 유무', '혈당 수치 monitoring', 'medicatioin 복약 확인']
     
     # 예측 결과에 따른 문자열 반환
     if prediction[0] == 0:
         prediction_str = 'Diabetes self management plan'
+        query_result = result_mapping_1  # '저혈당 증상 유무', '혈당 수치 monitoring', 'medicatioin 복약 확인' 모두 반환
     else:
         prediction_str = random.choice(result_mapping[:-1])  # 'Diabetes self management plan'을 제외한 리스트에서 선택
+        query_result = ['medicatioin 복약 확인']  # 'medicatioin 복약 확인'만 반환
 
-    # print(result)  # 결과 배열 추출
-
-    # 결과를 JSON 응답으로 반환
-    return jsonify({'prediction': prediction_str})
+    return {
+        'prediction': prediction_str,
+        'query': query_result
+    }
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
